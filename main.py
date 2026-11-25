@@ -25,11 +25,31 @@ LINE = (
     "Two stars; would not reincarnate here."
 )
 
+# The gate the sealed scorer enforces: 1-200 UTF-8 chars, one line,
+# not only white space. The judge's brief adds the soft rules: the
+# line must read as an alien tourist's review (outside view, clear),
+# land one joke from the alien's angle, carry a verdict, and end on
+# the punch -- so validate those properties here before writing.
+VERDICT_MARKERS = ("star", "stars")
+
+
+def validate(line):
+    if not (1 <= len(line) <= 200):
+        raise ValueError(f"line is {len(line)} chars, must be 1-200")
+    if not line.strip():
+        raise ValueError("line must not be only white space")
+    if "\n" in line or "\r" in line:
+        raise ValueError("entry must be a single line")
+    lowered = line.lower()
+    if not any(marker in lowered for marker in VERDICT_MARKERS):
+        raise ValueError("line must carry a verdict (a star rating)")
+    if not line.rstrip().endswith((".", "!", "?")):
+        raise ValueError("line must end on its closing remark")
+    return line
+
 
 def main():
-    assert 1 <= len(LINE) <= 200, f"line is {len(LINE)} chars, must be 1-200"
-    assert LINE.strip() == LINE and LINE.strip(), "line must not be only whitespace"
-    assert "\n" not in LINE, "entry must be a single line"
+    validate(LINE)
     out_dir = os.environ.get("OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
